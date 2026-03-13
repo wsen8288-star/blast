@@ -1,0 +1,6 @@
+id,temperature,pressure,gasFlow,oxygenLevel,productionRate,energyConsumption,status
+1,1250,180,2000,21,55,1200,NORMAL
+2,,185,2100,20.5,54,1180,NORMAL
+3,9999,190,2200,19.8,56,1190,NORMAL
+4,1300,500,2300,30,200,5000,ALARM
+5,1240,175,2050,22,57,1210,NORMAL

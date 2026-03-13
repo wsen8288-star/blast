@@ -1,0 +1,59 @@
+[
+  {
+    "key": "default_cn",
+    "label": "默认中文模板",
+    "description": "面向常见中文报表字段",
+    "requiredCanonical": ["temperature", "pressure", "windVolume", "coalInjection", "productionRate"],
+    "aliases": {
+      "furnaceId": ["高炉编号", "高炉id", "炉号", "furnaceid", "furnace_id", "blastfurnaceid"],
+      "timestamp": ["时间", "时间戳", "采集时间", "记录时间"],
+      "temperature": ["炉温", "温度", "风温"],
+      "pressure": ["炉顶压力", "压力", "风压"],
+      "windVolume": ["风量", "送风量", "鼓风量"],
+      "coalInjection": ["喷煤量", "煤粉喷吹量"],
+      "materialHeight": ["料面高度", "料位高度"],
+      "gasFlow": ["煤气流量", "煤气量"],
+      "oxygenLevel": ["氧含量", "氧气含量", "o2"],
+      "productionRate": ["产量", "生产率"],
+      "energyConsumption": ["能耗", "单位能耗"],
+      "hotMetalTemperature": ["铁水温度", "出铁温度", "hotmetaltemperature", "hotmetaltemp"],
+      "siliconContent": ["铁水含硅量", "硅含量", "si含量"],
+      "constantSignal": ["常量信号", "常量", "constant", "constantsignal"],
+      "status": ["状态", "工况状态", "status"]
+    },
+    "unitConversions": [
+      { "canonical": "pressure", "fromUnit": "pa", "toUnit": "kpa", "factor": 0.001, "offset": 0.0 },
+      { "canonical": "pressure", "fromUnit": "mpa", "toUnit": "kpa", "factor": 1000.0, "offset": 0.0 },
+      { "canonical": "temperature", "fromUnit": "k", "toUnit": "c", "factor": 1.0, "offset": -273.15 },
+      { "canonical": "hotMetalTemperature", "fromUnit": "k", "toUnit": "c", "factor": 1.0, "offset": -273.15 }
+    ]
+  },
+  {
+    "key": "third_party_en",
+    "label": "第三方英文模板",
+    "description": "面向英文列名及工业系统导出",
+    "requiredCanonical": ["temperature", "pressure", "windVolume", "coalInjection", "productionRate"],
+    "aliases": {
+      "furnaceId": ["furnaceid", "furnace_id", "blastfurnaceid", "furnaceno"],
+      "timestamp": ["timestamp", "datetime", "eventtime"],
+      "temperature": ["furnacetemp", "temperature", "windtemp"],
+      "pressure": ["toppressure", "pressure", "windpressure"],
+      "windVolume": ["airflow", "windvolume", "blastvolume"],
+      "coalInjection": ["coalinjection", "coalrate", "pcirate"],
+      "materialHeight": ["burdenlevel", "materialheight"],
+      "gasFlow": ["gasflow", "bfgflow"],
+      "oxygenLevel": ["oxygenlevel", "o2content"],
+      "productionRate": ["productionrate", "outputrate"],
+      "energyConsumption": ["energyconsumption", "specificenergy"],
+      "hotMetalTemperature": ["hotmetaltemp", "hotmetaltemperature"],
+      "siliconContent": ["siliconcontent", "sicontent", "hotsi"],
+      "constantSignal": ["constantsignal", "constant", "constantsensor"],
+      "status": ["status", "state", "conditionstatus"]
+    },
+    "unitConversions": [
+      { "canonical": "pressure", "fromUnit": "pa", "toUnit": "kpa", "factor": 0.001, "offset": 0.0 },
+      { "canonical": "temperature", "fromUnit": "k", "toUnit": "c", "factor": 1.0, "offset": -273.15 },
+      { "canonical": "hotMetalTemperature", "fromUnit": "k", "toUnit": "c", "factor": 1.0, "offset": -273.15 }
+    ]
+  }
+]

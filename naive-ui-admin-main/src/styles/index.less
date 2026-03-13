@@ -1,0 +1,23 @@
+@import url("./transition/index.less");
+
+/* --- 修复 Naive UI 下拉菜单文字偏右的问题 --- */
+.n-dropdown-menu {
+  /* 让下拉选项容器居中，并保持左右 padding 一致 */
+  .n-dropdown-option-body {
+    padding: 0 20px !important;
+    justify-content: center !important;
+  }
+  
+  /* 彻底干掉下拉菜单左侧看不见的图标占位槽 */
+  .n-dropdown-option-body__prefix {
+    display: none !important;
+    margin: 0 !important;
+    width: 0 !important;
+  }
+  
+  /* 确保文本内容本身完美居中，取消它默认的 flex-1 撑满属性 */
+  .n-dropdown-option-body__content {
+    text-align: center !important;
+    flex: none !important;
+  }
+}

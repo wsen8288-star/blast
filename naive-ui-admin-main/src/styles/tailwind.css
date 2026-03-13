@@ -1,0 +1,38 @@
+/*! @import */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 浅色模式 - Soybean 经典高级灰白底色 */
+    --base-color: #ffffff;
+    --base-body-color: #f6f9f8;
+    --base-card-color: #ffffff;
+    --base-border-color: #efeff5;
+    
+    /* 优雅的滚动条 (浅色) */
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(144, 147, 153, 0.3);
+    --scrollbar-thumb-hover: rgba(144, 147, 153, 0.5);
+  }
+
+  html.dark {
+    /* 深色模式 - Soybean 深邃工业黑 */
+    --base-color: #18181c;
+    --base-body-color: #101014;
+    --base-card-color: #18181c;
+    --base-border-color: rgba(255, 255, 255, 0.09);
+    
+    /* 优雅的滚动条 (深色) */
+    --scrollbar-track: transparent;
+    --scrollbar-thumb: rgba(255, 255, 255, 0.2);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.3);
+  }
+
+  body {
+    background-color: var(--base-body-color);
+    color: var(--n-text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
