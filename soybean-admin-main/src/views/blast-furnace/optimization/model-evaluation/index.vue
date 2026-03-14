@@ -219,7 +219,7 @@
               type="primary"
               ghost
             >
-              {{ f }}
+              {{ getFeatureName(f) }}
             </n-tag>
           </n-space>
         </n-descriptions-item>
@@ -666,7 +666,7 @@
       .sort((a, b) => b[1] - a[1]) 
       .slice(0, 10); 
 
-    const featureNames = importanceEntries.map((item) => item[0]).reverse();
+    const featureNames = importanceEntries.map((item) => getFeatureName(item[0])).reverse();
     const featureValues = importanceEntries.map((item) => item[1]).reverse();
 
     setFeatureImpOptions({
@@ -712,9 +712,31 @@
     const sources: Record<string, string> = {
       train_data: '训练集数据',
       validation_data: '验证集数据',
-      custom_data: '自定义数据',
+      custom_data: '全量数据',
+      all_data: '全量数据',
+      full_data: '全量数据',
+      test_data: '验证集数据',
     };
     return sources[source] || source;
+  };
+
+  const getFeatureName = (feature: string) => {
+    const featureMap: Record<string, string> = {
+      temperature: '温度',
+      pressure: '压力',
+      windVolume: '风量',
+      coalInjection: '喷煤量',
+      materialHeight: '料面高度',
+      gasFlow: '煤气流量',
+      oxygenLevel: '氧气含量',
+      productionRate: '生产率',
+      energyConsumption: '能耗',
+      hotMetalTemperature: '铁水温度',
+      siliconContent: '铁水含硅量',
+      constantSignal: '常量信号',
+    };
+    const key = (feature || '').trim();
+    return featureMap[key] || key;
   };
 
   const parseNumberArray = (value: any) => {

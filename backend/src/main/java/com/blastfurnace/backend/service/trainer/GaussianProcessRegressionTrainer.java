@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.function.Consumer;
 
 public class GaussianProcessRegressionTrainer implements ModelTrainer {
@@ -362,7 +363,62 @@ public class GaussianProcessRegressionTrainer implements ModelTrainer {
         }
         result.setTrueValues(trueValues);
         result.setPredictedValues(predictedValues);
+        Map<String, Double> featureImportance = calculatePermutationImportance(castedModels, evalXnorm, evalY, p, inputFeatureNames);
+        result.setFeatureImportance(featureImportance);
         return result;
+    }
+
+    private Map<String, Double> calculatePermutationImportance(List<GaussianProcessRegression<double[]>> models,
+                                                               double[][] evalXnorm,
+                                                               double[] evalY,
+                                                               GprPreprocessor preprocessor,
+                                                               String[] inputFeatureNames) {
+        Map<String, Double> importance = new HashMap<>();
+        if (models == null || models.isEmpty() || evalXnorm == null || evalXnorm.length == 0 || inputFeatureNames == null || inputFeatureNames.length == 0) {
+            return importance;
+        }
+        double[] baselinePred = predict(models, evalXnorm, preprocessor.yStd, preprocessor.yMean);
+        double baselineMse = calculateMetrics(evalY, baselinePred)[0];
+        int n = evalXnorm.length;
+        int d = inputFeatureNames.length;
+        double[] raw = new double[d];
+        for (int j = 0; j < d; j++) {
+            double[][] permuted = new double[n][d];
+            for (int i = 0; i < n; i++) {
+                System.arraycopy(evalXnorm[i], 0, permuted[i], 0, d);
+            }
+            int[] index = new int[n];
+            for (int i = 0; i < n; i++) {
+                index[i] = i;
+            }
+            Random random = new Random(20260314L + j * 9973L);
+            for (int i = n - 1; i > 0; i--) {
+                int k = random.nextInt(i + 1);
+                int tmp = index[i];
+                index[i] = index[k];
+                index[k] = tmp;
+            }
+            for (int i = 0; i < n; i++) {
+                permuted[i][j] = evalXnorm[index[i]][j];
+            }
+            double[] permPred = predict(models, permuted, preprocessor.yStd, preprocessor.yMean);
+            double permMse = calculateMetrics(evalY, permPred)[0];
+            raw[j] = Math.max(0, permMse - baselineMse);
+        }
+        double sum = 0;
+        for (double v : raw) {
+            sum += v;
+        }
+        if (sum <= 0) {
+            for (String feature : inputFeatureNames) {
+                importance.put(feature, 0.0);
+            }
+            return importance;
+        }
+        for (int j = 0; j < d; j++) {
+            importance.put(inputFeatureNames[j], raw[j] / sum);
+        }
+        return importance;
     }
 
     private double[] calculateMetrics(double[] actual, double[] predicted) {

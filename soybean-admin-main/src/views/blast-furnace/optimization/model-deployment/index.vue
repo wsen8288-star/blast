@@ -343,7 +343,7 @@
               <div class="mt-4 rounded-lg border p-4" style="border-color: var(--n-border-color);">
                 <n-form label-placement="left" label-width="120">
                   <div
-                    v-if="runtimeConfig.safetyHold"
+                    v-if="activeSafetyHoldEnabled"
                     class="mb-2 rounded border px-3 py-2"
                     style="border-color: var(--n-border-color);"
                   >
@@ -1342,6 +1342,20 @@
     }
     return null;
   };
+  const activeServiceRuntimeConfig = computed(() => {
+    const parsed = parseRuntimeConfig(activeService.value?.serviceConfig);
+    const merged = { ...defaultRuntimeConfig, ...(parsed || {}) } as Record<string, any>;
+    const hold = merged.safetyHold ?? merged.autoFallback;
+    if (typeof hold === 'boolean') {
+      merged.safetyHold = hold;
+    } else if (hold == null) {
+      merged.safetyHold = false;
+    } else {
+      merged.safetyHold = String(hold).toLowerCase() === 'true';
+    }
+    return merged;
+  });
+  const activeSafetyHoldEnabled = computed(() => !!activeServiceRuntimeConfig.value.safetyHold);
 
   const applyHistoryConfig = (row: any) => {
     if (!row) {
@@ -1987,7 +2001,7 @@
 
   const buildPredictionInput = () => {
     const input: Record<string, number | null> = {};
-    if (runtimeConfig.safetyHold && targetVariableKey.value) {
+    if (activeSafetyHoldEnabled.value && targetVariableKey.value) {
       input[targetVariableKey.value] = targetActualValue.value;
     }
     expectedFeatures.value.forEach((feature) => {
@@ -2033,12 +2047,8 @@
       predictionFallbackSource.value = '';
       return;
     }
-    if (
-      runtimeConfig.safetyHold &&
-      (targetActualValue.value === null ||
-        targetActualValue.value === undefined ||
-        Number.isNaN(targetActualValue.value))
-    ) {
+    if (activeSafetyHoldEnabled.value &&
+      (targetActualValue.value === null || targetActualValue.value === undefined || Number.isNaN(targetActualValue.value))) {
       const msg = `已开启安全熔断，请填写“熔断回退值（${targetVariableLabel.value}）”`;
       message.warning(msg);
       predictionResult.value = msg;

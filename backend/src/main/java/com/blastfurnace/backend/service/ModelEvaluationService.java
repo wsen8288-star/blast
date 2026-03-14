@@ -36,7 +36,8 @@ public class ModelEvaluationService {
     }
 
     public EvaluationResultVO evaluate(ModelTraining training, String dataSource, String selectedFeatures) {
-        List<ProductionData> evaluationData = getEvaluationData(training, dataSource);
+        String normalizedDataSource = normalizeDataSource(dataSource);
+        List<ProductionData> evaluationData = getEvaluationData(training, normalizedDataSource);
         if (evaluationData.isEmpty()) {
             throw new IllegalArgumentException("评估数据为空。原因可能是：1. 训练时使用的上传文件已从内存中清除（如重启了服务器）；2. 数据库中无数据。请尝试重新上传数据并训练模型。");
         }
@@ -61,7 +62,7 @@ public class ModelEvaluationService {
         ModelEvaluation evaluation = new ModelEvaluation();
         evaluation.setTrainingId(training.getId());
         evaluation.setModelType(training.getModelType());
-        evaluation.setDataSource(dataSource);
+        evaluation.setDataSource(normalizedDataSource);
         evaluation.setFeatures(training.getSelectedFeatures());
         evaluation.setR2(result.getR2Score());
         evaluation.setMae(result.getMae());
@@ -144,6 +145,20 @@ public class ModelEvaluationService {
             return new ArrayList<>(split.validation());
         }
         return new ArrayList<>(split.train());
+    }
+
+    private String normalizeDataSource(String dataSource) {
+        if (dataSource == null || dataSource.isBlank()) {
+            return "validation_data";
+        }
+        String value = dataSource.trim().toLowerCase(Locale.ROOT);
+        if ("all_data".equals(value) || "full_data".equals(value) || "custom_data".equals(value)) {
+            return "custom_data";
+        }
+        if ("train_data".equals(value) || "validation_data".equals(value) || "test_data".equals(value)) {
+            return value;
+        }
+        return "validation_data";
     }
 
     private List<ProductionData> getDataFromUploadedFile(ModelTraining training) {

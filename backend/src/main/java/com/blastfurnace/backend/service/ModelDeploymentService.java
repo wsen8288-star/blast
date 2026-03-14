@@ -485,20 +485,17 @@ public class ModelDeploymentService {
             }
         }
 
-        ProductionData data = buildProductionData(normalizedInput);
         ModelTrainer trainer = modelTrainerFactory.getTrainer(training.getModelType());
-        var result = trainer.evaluate(
-                List.of(data),
-                training,
-                training.getModelConfig(),
-                features,
-                storedModel.getModel(),
-                storedModel.getPreprocessor()
-        );
+        var result = evaluateSingle(training, trainer, features, storedModel, normalizedInput);
+        if (!result.isSuccess()) {
+            throw new IllegalStateException("模型推理失败: " + result.getMessage());
+        }
 
         Double prediction = null;
         if (result.getPredictedValues() != null && !result.getPredictedValues().isEmpty()) {
             prediction = result.getPredictedValues().get(0);
+        } else {
+            throw new IllegalStateException("模型推理失败: 未返回预测值");
         }
         Double rawPrediction = prediction;
         
@@ -621,9 +618,14 @@ public class ModelDeploymentService {
         }
         ModelTrainer trainer = modelTrainerFactory.getTrainer(training.getModelType());
         TrainingResult baseResult = evaluateSingle(training, trainer, features, storedModel, normalizedInput);
+        if (!baseResult.isSuccess()) {
+            throw new IllegalStateException("解释性分析失败: " + baseResult.getMessage());
+        }
         Double rawPrediction = null;
         if (baseResult.getPredictedValues() != null && !baseResult.getPredictedValues().isEmpty()) {
             rawPrediction = baseResult.getPredictedValues().get(0);
+        } else {
+            throw new IllegalStateException("解释性分析失败: 未返回预测值");
         }
         Double prediction = rawPrediction;
         Double lowerLimit = parseDouble(runtimeConfig.get("alarmLowerLimit"));
@@ -674,6 +676,12 @@ public class ModelDeploymentService {
             downInput.put(feature, downValue);
             TrainingResult upResult = evaluateSingle(training, trainer, features, storedModel, upInput);
             TrainingResult downResult = evaluateSingle(training, trainer, features, storedModel, downInput);
+            if (!upResult.isSuccess()) {
+                throw new IllegalStateException("解释性分析失败(上调): " + upResult.getMessage());
+            }
+            if (!downResult.isSuccess()) {
+                throw new IllegalStateException("解释性分析失败(下调): " + downResult.getMessage());
+            }
             Double upPrediction = upResult.getPredictedValues() != null && !upResult.getPredictedValues().isEmpty()
                     ? upResult.getPredictedValues().get(0)
                     : null;
@@ -873,6 +881,7 @@ public class ModelDeploymentService {
     private ServiceInfoDTO toServiceInfo(ModelService service, Long trainingId, String targetVariable) {
         ServiceInfoDTO dto = new ServiceInfoDTO();
         dto.setId(service.getId());
+        dto.setDeploymentId(service.getDeploymentId());
         dto.setTrainingId(trainingId);
         dto.setTargetVariable(targetVariable);
         dto.setName(service.getName());
@@ -881,6 +890,7 @@ public class ModelDeploymentService {
         dto.setStatus(service.getStatus());
         dto.setUrl(service.getUrl());
         dto.setVersion(service.getVersion());
+        dto.setServiceConfig(service.getServiceConfig());
         return dto;
     }
 
@@ -1130,6 +1140,14 @@ public class ModelDeploymentService {
             Map<String, Object> input
     ) {
         ProductionData data = buildProductionData(input);
+        String targetVariable = training.getTargetVariable() == null || training.getTargetVariable().isBlank()
+                ? "productionRate"
+                : uploadedDataNormalizer.toCanonicalKey(training.getTargetVariable().trim());
+        Double targetValue = parseDouble(resolveInputValue(input, targetVariable));
+        if (targetValue == null) {
+            targetValue = 0d;
+        }
+        trainer.setTargetValue(data, targetVariable, targetValue);
         return trainer.evaluate(
                 List.of(data),
                 training,

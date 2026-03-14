@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class ServiceInfoDTO {
     private Long id;
+    private Long deploymentId;
     private Long trainingId;
     private String targetVariable;
     private String name;
@@ -13,4 +14,5 @@ public class ServiceInfoDTO {
     private String status;
     private String url;
     private String version;
+    private String serviceConfig;
 }
